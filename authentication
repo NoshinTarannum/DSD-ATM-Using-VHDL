@@ -1,0 +1,72 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+
+
+entity authentication_vhdl is
+    port (
+        Reset   : in  std_logic;
+        Clock   : in  std_logic;
+        Action  : in  std_logic_vector (1 downto 0);
+        Success : out std_logic);
+end authentication_vhdl;
+
+
+architecture Behavioral of authentication_vhdl is
+
+
+    type StateType is (insertCard, enterPIN, secondChance, userAuthenticated);
+    signal currentState, nextState : StateType;
+
+
+begin
+
+
+    synch : process (Reset, Clock)
+    begin
+        if (Reset = '1') then
+            currentState <= insertCard;
+        elsif rising_edge(Clock) then
+            currentState <= nextState;
+        end if;
+    end process;
+
+
+    comb : process (currentState, Action)
+    begin
+        Success <= '0';
+        case currentState is
+           
+            when insertCard =>
+                if (Action = "00") then
+                    nextState <= insertCard;
+                elsif (Action = "01") then
+                    nextState <= enterPin;
+                end if;
+
+
+            when enterPIN =>
+                if (Action = "11") then
+                    nextState <= secondChance;
+                elsif (Action = "10") then
+                    nextState <= userAuthenticated;
+                end if;
+
+
+            when secondChance =>
+                if (Action = "11") then
+                    nextState <= insertCard;
+                elsif (Action = "10") then
+                    nextState <= userAuthenticated;
+                end if;
+
+
+            when userAuthenticated =>
+                Success <= '1';
+
+
+        end case;
+
+
+    end process;
+   
+end Behavioral;
