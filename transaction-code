@@ -1,0 +1,42 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+
+
+entity transactionType_vhdl is
+    port (
+        I   : in  std_logic_vector(1 downto 0);
+        en  : in  std_logic;
+        sel : in  std_logic;
+        O   : out std_logic);
+end transactionType_vhdl;
+
+
+architecture Behavioral of transactionType_vhdl is
+
+
+    type muxInput is (Idle, balanceEnquiry, withdrawCash);
+    signal transactionType : muxInput;
+
+
+begin
+
+
+    mux2 : process (sel, en)
+    begin
+
+
+        if (en = '1') then
+            case sel is
+                when '0' => O    <= I(0);
+                    transactionType  <= balanceEnquiry;
+                when '1' => O    <= I(1);
+                    transactionType  <= withdrawCash;
+                when others => O <= 'X';
+            end case;
+        else
+            O               <= 'X';
+            transactionType <= Idle;
+           
+        end if;
+    end process;
+end Behavioral;
