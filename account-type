@@ -1,0 +1,42 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+
+
+entity accountType_vhdl is
+    port (
+        I   : in  std_logic_vector(1 downto 0);
+        en  : in  std_logic;
+        sel : in  std_logic;
+        O   : out std_logic);
+end accountType_vhdl;
+
+
+architecture Behavioral of accountType_vhdl is
+
+
+    type muxInput is (Idle, currentAccount, savingsAccount);
+    signal accountType : muxInput;
+
+
+begin
+
+
+    mux1 : process (sel, en)
+    begin
+        if (en = '1') then
+            case sel is
+                when '0' => O    <= I(0);
+                    accountType      <= currentAccount;
+                when '1' => O    <= I(1);
+                    accountType      <= savingsAccount;
+                when others => O <= 'X';
+            end case;
+        else
+            O           <= 'X';
+            accountType <= Idle;
+        end if;
+       
+    end process;
+
+
+end Behavioral;
