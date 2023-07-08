@@ -1,0 +1,68 @@
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.NUMERIC_STD.ALL;
+
+
+ENTITY ATM_Machine IS
+    PORT (
+        Clock          : IN  STD_LOGIC;
+        Reset          : IN  STD_LOGIC;
+        AuthAction     : IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
+        CardPin        : IN  STD_LOGIC_VECTOR (2 DOWNTO 0);
+        TrxEnable      : IN  STD_LOGIC;
+        TrxTypeSel     : IN  STD_LOGIC_VECTOR (1 DOWNTO 0);
+        WithdrawAmount : IN  unsigned(3 DOWNTO 0);
+        AccBalance     : OUT unsigned(3 DOWNTO 0);
+        TrxCompleted   : OUT STD_LOGIC);
+END ATM_Machine;
+
+
+ARCHITECTURE Behavioral OF ATM_Machine IS
+
+
+    SIGNAL authSuccess     : STD_LOGIC;
+    SIGNAL verifierOutput  : STD_LOGIC_VECTOR(2 DOWNTO 0);
+    SIGNAL selectedAccType : STD_LOGIC;
+    SIGNAL selectedTrxType : STD_LOGIC_VECTOR(1 DOWNTO 0);
+   
+BEGIN
+
+
+    authenticator : ENTITY work.auth_vhdl
+        PORT MAP(
+            Reset   => Reset,
+            Clock   => Clock,
+            Action  => AuthAction,
+            Success => authSuccess
+        );
+       
+    verifier : ENTITY work.verPIN_vhdl
+        PORT MAP(
+            Reset  => Reset,
+            Clock  => Clock,
+            verify => authSuccess,
+            x      => CardPin,
+            y      => verifierOutput
+        );
+       
+    optionScreen : ENTITY work.optionScreen_vhdl
+        PORT MAP(
+            I       => verifierOutput,
+            en      => TrxEnable,
+            sel     => TrxTypeSel,
+            accType => selectedAccType,
+            O       => selectedTrxType
+        );
+       
+    transaction : ENTITY work.Transaction
+        PORT MAP(
+            clock                => Clock,
+            reset                => Reset,
+            action               => selectedTrxType,
+            accType              => selectedAccType,
+            withdraw_amount      => WithdrawAmount,
+            current_balance      => AccBalance,
+            transaction_complete => TrxCompleted
+        );
+       
+END Behavioral;
