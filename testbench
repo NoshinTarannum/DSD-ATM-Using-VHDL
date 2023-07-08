@@ -1,0 +1,103 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE IEEE.NUMERIC_STD.ALL;
+
+
+ENTITY ATM_Machine_TB IS
+END ATM_Machine_TB;
+
+
+ARCHITECTURE behavior OF ATM_Machine_TB IS
+
+
+    -- Component Declaration for the Unit Under Test (UUT)
+    COMPONENT ATM_Machine
+        PORT (
+            Clock          : IN  STD_LOGIC;
+            Reset          : IN  STD_LOGIC;
+            AuthAction     : IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
+            CardPin        : IN  STD_LOGIC_VECTOR(2 DOWNTO 0);
+            TrxEnable      : IN  STD_LOGIC;
+            TrxTypeSel     : IN  STD_LOGIC_VECTOR(1 DOWNTO 0);
+            WithdrawAmount : IN  unsigned(3 DOWNTO 0);
+            AccBalance     : OUT unsigned(3 DOWNTO 0);
+            TrxCompleted   : OUT STD_LOGIC
+        );
+    END COMPONENT;
+   
+    --Inputs
+    SIGNAL Clock          : STD_LOGIC                    := '0';
+    SIGNAL Reset          : STD_LOGIC                    := '0';
+    SIGNAL AuthAction     : STD_LOGIC_VECTOR(1 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL CardPin        : STD_LOGIC_VECTOR(2 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL TrxEnable      : STD_LOGIC                    := '0';
+    SIGNAL TrxTypeSel     : STD_LOGIC_VECTOR(1 DOWNTO 0) := (OTHERS => '0');
+    SIGNAL WithdrawAmount : unsigned(3 DOWNTO 0)         := (OTHERS => '0');
+   
+    --Outputs
+    SIGNAL AccBalance     : unsigned(3 DOWNTO 0);
+    SIGNAL TrxCompleted   : STD_LOGIC;
+   
+    -- Clock period definitions
+    CONSTANT Clock_period : TIME := 10 ns;
+   
+BEGIN
+
+
+    -- Instantiate the Unit Under Test (UUT)
+    uut : ATM_Machine PORT MAP(
+        Clock          => Clock,
+        Reset          => Reset,
+        AuthAction     => AuthAction,
+        CardPin        => CardPin,
+        TrxEnable      => TrxEnable,
+        TrxTypeSel     => TrxTypeSel,
+        WithdrawAmount => WithdrawAmount,
+        AccBalance     => AccBalance,
+        TrxCompleted   => TrxCompleted
+    );
+   
+    -- Clock process definitions
+    Clock_process : PROCESS
+    BEGIN
+   
+        Clock <= '0';
+        WAIT FOR Clock_period/2;
+        Clock <= '1';
+        WAIT FOR Clock_period/2;
+       
+    END PROCESS;
+   
+    -- Stimulus process
+    stim_proc : PROCESS
+    BEGIN
+   
+        Reset <= '1';
+        WAIT FOR 10 ns;
+        Reset <= '0';
+        WAIT FOR 10 ns;
+        AuthAction <= "01";
+        WAIT FOR 20 ns;
+        AuthAction <= "10";
+        WAIT FOR 30 ns;
+        CardPin <= "001";
+        WAIT FOR 40 ns;
+        CardPin <= "010";
+        WAIT FOR 50 ns;
+        CardPin <= "011";
+        WAIT FOR 60 ns;
+        CardPin <= "100";
+        WAIT FOR 70 ns;
+        CardPin <= "101";
+        WAIT FOR 80 ns;
+        WithdrawAmount <= to_unsigned(3, 4);
+        WAIT FOR 90 ns;
+        TrxEnable  <= '1';
+        TrxTypeSel <= "10";
+        WAIT FOR 100 ns;
+        TrxEnable <= '0';
+        WAIT;
+       
+    END PROCESS;
+   
+END;
