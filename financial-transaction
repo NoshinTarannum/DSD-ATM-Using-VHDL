@@ -1,0 +1,76 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.all;
+
+
+entity Transaction is
+    port (
+        clock                : in  std_logic;
+        reset                : in  std_logic;
+        action               : in  std_logic_vector(1 downto 0);
+        withdraw_amount      : in  unsigned(3 downto 0);
+        current_balance      : out unsigned(3 downto 0);
+        transaction_complete : out std_logic);
+end Transaction;
+
+
+architecture Behavioral of Transaction is
+
+
+    type StateType is (Idle, Withdraw, Enquiry, Completion);
+    signal currentState, nextState : StateType;
+    signal balance                 : unsigned(3 downto 0) := to_unsigned(9, 4);
+
+
+begin
+
+
+    sync : process (reset, clock)
+    begin
+        if (reset = '1') then
+            currentState <= Idle;
+        elsif rising_edge(clock) then
+            currentState <= nextState;
+        end if;
+    end process;
+
+
+    comb : process (currentState, action)
+    begin
+        transaction_complete <= '0';
+        case currentState is
+
+
+            when Idle =>
+                if action = "10" then
+                    nextState <= Withdraw;
+                elsif action = "11" then
+                    nextState <= Enquiry;
+                else
+                    nextState <= Idle;
+                end if;
+
+
+            when Withdraw =>
+                if withdraw_amount > balance then
+                    nextState <= Idle;
+                else
+                    balance              <= balance - withdraw_amount;
+                    nextState            <= Completion;
+                end if;
+
+
+            when Enquiry =>
+                nextState            <= Completion;
+	when Completion =>
+                nextState            <= Idle;
+                transaction_complete <= '1';
+        end case;
+
+
+    end process;
+
+
+    current_balance <= balance;
+   
+end Behavioral;
