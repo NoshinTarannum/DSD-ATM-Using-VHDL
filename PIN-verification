@@ -1,0 +1,102 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.all;
+
+
+entity verPIN_vhdl is
+    port (
+        Reset : in  std_logic;
+        Clock : in  std_logic;
+        x     : in  std_logic_vector (2 downto 0);
+        y     : out std_logic);
+end verPIN_vhdl;
+
+
+architecture Behavioral of verPIN_vhdl is
+
+
+    type StateType is (Idle, oneDigit, twoDigit, threeDigit, fourDigit, Error);
+    signal State, nextState : StateType;
+
+
+begin
+
+
+    synch : process (Reset, Clock)
+    begin
+        if (Reset = '1') then
+            State <= Idle;
+        elsif rising_edge(Clock) then
+            State <= nextState;
+        end if;
+    end process;
+
+
+    comb : process (State, x)
+    begin
+        y <= '0';
+        case State is
+
+
+            when Idle =>
+                if (x = "000") then
+                    nextState <= Idle;
+                elsif (x = "001") then
+                    nextState <= oneDigit;
+                else
+                    nextState <= Error;
+                end if;
+
+
+            when oneDigit =>
+                if (x = "000") then
+                    nextState <= Idle;
+                elsif (x = "010") then
+                    nextState <= twoDigit;
+                else
+                    nextState <= Error;
+                end if;
+
+
+            when twoDigit =>
+                if (x = "000") then
+                    nextState <= Idle;
+                elsif (x = "011") then
+                    nextState <= threeDigit;
+                else
+                    nextState <= Error;
+                end if;
+
+
+            when threeDigit =>
+                if (x = "000") then
+                    nextState <= Idle;
+                elsif (x = "100") then
+                    nextState <= fourDigit;
+                else
+                    nextState <= Error;
+                end if;
+
+
+            when fourDigit =>
+                if (x = "000") then
+                    nextState <= Idle;
+                elsif (x = "101") then
+                    y         <= '1';
+                    nextState <= Idle;
+                else
+                    nextState <= Error;
+                end if;
+
+
+            when Error =>
+                if (x = "000") then
+                    nextState <= Idle;
+                end if;
+
+
+        end case;
+
+
+    end process;
+   
+end Behavioral;
